@@ -1,2 +1,2 @@
 # autisso
-Application to work on the recognition of emotions for autistic people
+Facial expression recognition to help autism people

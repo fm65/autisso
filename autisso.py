@@ -18,5 +18,10 @@ def webcam():
     return Response(from_webcam(video),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/game')
+def game():
+    return render_template ('game.html')
+
 if __name__ == '__main__':
     app.run(threaded=True)
+

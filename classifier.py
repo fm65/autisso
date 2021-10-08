@@ -13,53 +13,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import facexp
+from init_db import check_img
 
 class_names = ('joy', 'fear', 'anger', 'surprise', 'sadness')
 
 (train_images, train_labels), (test_images, test_labels) = facexp.load_data()
 
+input_shape=(64, 64)
+
 train_images = train_images / 255.0
 
 test_images = test_images / 255.0
 
-'''
-plt.figure(figsize=(10,10))
-for i in range(25):
-    plt.subplot(5,5,i+1)
-    plt.xticks([])
-    plt.yticks([])
-    plt.grid(False)
-    plt.imshow(train_images[i], cmap=plt.cm.binary)
-    plt.xlabel(class_names[train_labels[i]])
-plt.show()
-'''
-
 model = tf.keras.Sequential([
-    tf.keras.layers.Flatten(input_shape=(64, 64)),
+    tf.keras.layers.Flatten(input_shape=input_shape),
     tf.keras.layers.Dense(128, activation='relu'),
     tf.keras.layers.Dense(5)
 ])
 
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
+def train(epochs=10):
+    model.compile(optimizer='adam',
+                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                metrics=['accuracy'])
 
-model.fit(train_images, train_labels, epochs=10)
+    model.fit(train_images, train_labels, epochs=epochs)
 
-test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+    test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+    
+    return test_loss, test_acc
 
-print('\nTest accuracy:', test_acc)
+def predict(image):
+    probability_model = tf.keras.Sequential([model, 
+                                            tf.keras.layers.Softmax()])
 
-probability_model = tf.keras.Sequential([model, 
-                                         tf.keras.layers.Softmax()])
-
-predictions = probability_model.predict(test_images)
-
-print(predictions[0])
-
-print(np.argmax(predictions[0]))
-
-print(test_labels[0])
+    predictions = probability_model.predict(image)
+    
+    return predictions
 
 def plot_image(i, predictions_array, true_label, img):
     true_label, img = true_label[i], img[i]
@@ -92,17 +81,50 @@ def plot_value_array(i, predictions_array, true_label):
     thisplot[predicted_label].set_color('red')
     thisplot[true_label].set_color('blue')
 
+def classify(i, predictions_array, true_label, training=True):
+    if training: train()
+    true_label = true_label[i]
+    predicted_label = np.argmax(predictions_array)
+    probability = predictions_array[predicted_label]
 
-# Plot the first X test images, their predicted labels, and the true labels.
-# Color correct predictions in blue and incorrect predictions in red.
-num_rows = 5
-num_cols = 4
-num_images = num_rows*num_cols
-plt.figure(figsize=(2*2*num_cols, 2*num_rows))
-for i in range(num_images):
-    plt.subplot(num_rows, 2*num_cols, 2*i+1)
-    plot_image(i, predictions[i], test_labels, test_images)
-    plt.subplot(num_rows, 2*num_cols, 2*i+2)
-    plot_value_array(i, predictions[i], test_labels)
-plt.tight_layout()
-plt.show()
+    true_label = class_names[true_label]
+    predicted_label = class_names[predicted_label]
+    probability = int(probability*100)
+
+    return true_label, predicted_label, probability
+
+def classify_one(image, training=False):
+    h,w = image.shape
+    x = image.reshape(1, h, w)
+    predictions = predict(x)
+    res = classify(0, predictions[0], test_labels, training=training)
+    if not training:
+        res = res[1:]
+    return res
+
+def debug():
+    # Plot the first X test images, their predicted labels, and the true labels.
+    # Color correct predictions in blue and incorrect predictions in red.
+    num_rows = 5
+    num_cols = 4
+    num_images = num_rows*num_cols
+    predictions = predict()
+    plt.figure(figsize=(2*2*num_cols, 2*num_rows))
+    for i in range(num_images):
+        plt.subplot(num_rows, 2*num_cols, 2*i+1)
+        plot_image(i, predictions[i], test_labels, test_images)
+        plt.subplot(num_rows, 2*num_cols, 2*i+2)
+        plot_value_array(i, predictions[i], test_labels)
+    plt.tight_layout()
+    plt.show()
+
+
+#print("true_label:", "predicted_label:", "probability:")
+#predictions = predict(test_images)
+#for i in range(20):
+#    res = classify(i, predictions[i], test_labels)
+#    print(res[0], res[1], res[2])
+
+#img = check_img('test.png')
+#res = classify_one(img)
+#print(res)

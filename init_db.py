@@ -76,5 +76,6 @@ def create(path, dbname='autisso.db'):
     connection.commit()
     connection.close()
 
-create(train_path,'train.db')
-create(test_path, 'test.db')
+if __name__ == '__main__':
+    create(train_path,'train.db')
+    create(test_path, 'test.db')

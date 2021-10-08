@@ -32,34 +32,54 @@
                 </div>
             </div>
             <div class="my-4">
-                <form class="form-group" name="photo">
+                <form method="POST" action="" enctype="multipart/form-data" class="form-group" name="photo">
                     <div class="my-4 bar text-center">
                         <div>
-                            <progress value="70" max="100"></progress>
-                            <label> 70%</label>
+                            <progress value="{{ probability }}" max="100"></progress>
+                            <label> {{ probability }}% </label>
                         </div>
                     </div>
                     <div class="row align-items-start bg-light corner2 mx-4">
+                        {% if predicted_label == class_names[0] %}
+                        <div class="col bg-success">
+                        {% else %}
                         <div class="col">
+                        {% endif %}
                             Joie
                         </div>
+                        {% if predicted_label == class_names[1] %}
                         <div class="col bg-success">
+                        {% else %}
+                        <div class="col">
+                        {% endif %}
                             Peur
                         </div>
+                        {% if predicted_label == class_names[2] %}
+                        <div class="col bg-success">
+                        {% else %}
                         <div class="col">
+                        {% endif %}
                             Colère
                         </div>
+                        {% if predicted_label == class_names[3] %}
+                        <div class="col bg-success">
+                        {% else %}
                         <div class="col">
+                        {% endif %}
                             Surprise
                         </div>
+                        {% if predicted_label == class_names[4] %}
+                        <div class="col bg-success">
+                        {% else %}
                         <div class="col">
+                        {% endif %}
                             Tristesse
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-6 my-4">
                             <label for="formFile" class="form-label">Choisir une photo</label>
-                            <input class="form-control" type="file" id="formFile">
+                            <input class="form-control" type="file" id="formFile" name="file">
                         </div>
                         <div class="col-sm-6 my-4">
                             <label class="form-label">Prendre une photo</label>
@@ -67,12 +87,13 @@
                         </div>
                     </div>
                     <div class="d-grid gap-2 col-3 mx-auto">
-                        <button class="btn btn-primary mt-2 btn-lg" type="submit">Envoyer</button>
+                        <button class="btn btn-primary mt-2 btn-lg" type="submit" value="Submit">Envoyer</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <h1>Predicted label: {{ predicted_label }}</h1>
     <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
